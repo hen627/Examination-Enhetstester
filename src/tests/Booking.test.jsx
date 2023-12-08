@@ -170,8 +170,15 @@ describe('Booking', () => {
   });
 
   it('Tests so user can navigate between confirmation and booking', async () => {
-    
+    bookingRender();
+    const buttonElement = screen.getByText("strIIIIIike!");
+    await userEvent.click(buttonElement);
+});
 
+it('Tests so user can navigate between confirmation and booking', async () => {
+  bookingRender();
+  const buttonElement = screen.getByText("strIIIIIike!");
+  await userEvent.click(buttonElement);
 });
 });
 
