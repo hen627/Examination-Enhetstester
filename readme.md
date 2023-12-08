@@ -4,9 +4,8 @@ Som användare vill jag kunna boka datum och tid samt ange antal spelare så att
 
 Scenario: User wants to make a booking.
 Given: The user navigates to the booking screen.
-And: Fills in all the forms.
-When: The user requests to book.
-Then: Return confirmation.
+And: Fills in the forms.
+
 
 ----
 
@@ -17,9 +16,8 @@ Som användare vill jag kunna välja skostorlek för varje spelare så varje spe
 Scenario: User wants to select shoesize for each participant
 Given: The user navigates to the booking screen.
 And: Fills in all the forms.
-And: The users adds each participants shoesize individually.
-When: The user requests to book.
-Then: Return confirmation.
+And: The users is able to add each participants shoesize individually.
+
 
 ----
 
@@ -55,7 +53,7 @@ Som användare vill jag kunna navigera mellan boknings-och bekräftelsevyn.
 ---
 
 Scenario: User wants to navigate between booking and confirmation.
-Given: The user has already placed a previous order.
+Given: The user is on the landing page.
 When: The user is on the booking screen.
 Then: The user can navigate to the confirmation screen. 
 And: When the user is on the confirmation screen they can navigate to the booking screen.

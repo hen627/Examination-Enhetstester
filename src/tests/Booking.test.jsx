@@ -1,9 +1,8 @@
 import * as React from 'react';
 import '@testing-library/jest-dom';
-import { BrowserRouter as Router, MemoryRouter } from 'react-router-dom';
+import { BrowserRouter as Router,useNavigate } from 'react-router-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event'
-import { act } from 'react-dom/test-utils';
 import Booking from '../views/Booking';
 import Confirmation from '../views/Confirmation';
 import { expect, vi } from 'vitest';
@@ -21,6 +20,11 @@ beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
+const mockedUsedNavigate = vi.fn();
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
+    useNavigate: () => mockedUsedNavigate,
+}))
 
 function bookingRender() {
   return render(
@@ -30,8 +34,8 @@ function bookingRender() {
   );
 }
 
-function confirmationRender(){
-  return   render(
+function confirmationRender() {
+  return render(
     <Router>
       <Confirmation />
     </Router>
@@ -55,19 +59,12 @@ export default function bookingInputs() {
 }
 
 
+// screen.debug();
 
 
 describe('Booking', () => {
-  screen.debug();
-  it('should not be able to book if all fields are not filled', async () => {
-    bookingRender();
-    const buttonElement = screen.getByText("strIIIIIike!");
-    await userEvent.click(buttonElement);
-    const alertElement = screen.getByText("Fill out all the fields and make sure that people and shoes is the same number.");
-    expect(alertElement).toBeInTheDocument();
-  });
 
-  it('should be able to be filled with values', () => {
+  it('should be able fill all fields with values', () => {
     bookingRender();
     const { dateInput, timeInput, personInput, laneInput } = bookingInputs();
 
@@ -94,28 +91,6 @@ describe('Booking', () => {
     }
     const shoesInput= screen.getByLabelText("Shoe size / person 2");
     expect(shoesInput.value).toBe("46");
-  })
-
-  it('should not be able to book if a disproportionate amount of shoes is added', async () => {
-    bookingRender();
-    const { dateInput, timeInput, personInput, laneInput } = bookingInputs();
-    const addShoesElement = screen.getByRole("button", {
-      name: "+"
-    });
-
-    for (let index = 0; index < personInput.value-1; index++) {
-      await userEvent.click(addShoesElement);
-      let shoeSizeInput = screen.getByLabelText(`Shoe size / person ${index+1}`);
-      await userEvent.type(shoeSizeInput, '40');
-
-    }
-    const buttonElement = screen.getByText("strIIIIIike!");
-    await userEvent.click(buttonElement);
-    await waitFor(() => {
-    const alertElement = screen.queryByText("Fill out all the fields and make sure that people and shoes is the same number.");
-    expect(alertElement).toBeInTheDocument();
-    })
-
   })
   it('Should be able to add and remove shoes based on need', async () => {
     bookingRender();
@@ -169,17 +144,61 @@ describe('Booking', () => {
 
   });
 
-  it('Tests so user can navigate between confirmation and booking', async () => {
+  it('Tests so user can navigate to confirmation', async () => {
     bookingRender();
-    const buttonElement = screen.getByText("strIIIIIike!");
-    await userEvent.click(buttonElement);
+
+    await userEvent.click(screen.getByText("Confirmation"))
+    screen.debug();
+
+    expect(mockedUsedNavigate).toBeCalled()
+    mockedUsedNavigate.mockRestore();
 });
 
-it('Tests so user can navigate between confirmation and booking', async () => {
+
+it('Tests so user can navigate to booking', async () => {
+  confirmationRender();
+
+  await userEvent.click(screen.getByText("Booking"))
+  screen.debug();
+
+  expect(mockedUsedNavigate).toBeCalled()
+  mockedUsedNavigate.mockRestore();
+});
+
+//FAILURE CONTROL
+
+it('should not be able to book if all fields are not filled', async () => {
   bookingRender();
   const buttonElement = screen.getByText("strIIIIIike!");
   await userEvent.click(buttonElement);
+  const alertElement = screen.getByText("Fill out all the fields and make sure that people and shoes is the same number.");
+  expect(alertElement).toBeInTheDocument();
 });
+
+
+it('should not be able to book if a disproportionate amount of shoes is added', async () => {
+  bookingRender();
+  const { dateInput, timeInput, personInput, laneInput } = bookingInputs();
+  const addShoesElement = screen.getByRole("button", {
+    name: "+"
+  });
+
+  for (let index = 0; index < personInput.value-1; index++) {
+    await userEvent.click(addShoesElement);
+    let shoeSizeInput = screen.getByLabelText(`Shoe size / person ${index+1}`);
+    await userEvent.type(shoeSizeInput, '40');
+
+  }
+  const buttonElement = screen.getByText("strIIIIIike!");
+  await userEvent.click(buttonElement);
+  await waitFor(() => {
+  const alertElement = screen.queryByText("Fill out all the fields and make sure that people and shoes is the same number.");
+  expect(alertElement).toBeInTheDocument();
+  });
+
+});
+
+
 });
 
 
